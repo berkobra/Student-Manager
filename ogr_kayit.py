@@ -1,10 +1,7 @@
-# -*- coding: utf-8 -*-
-from __future__ import print_function
 import easygui as eg
 import sys
 import csv
 from collections import OrderedDict
-
 
 BLANK_LIST_ERROR = 'Program logic error - no choices were specified.'
 PROPERTIES = ("Ad","Soyad","Universite","OSYM Puani",
@@ -55,12 +52,6 @@ class Student(object):
     def export_for_csv(self):
         return self.get_info().values()
 
-def txt_to_ascii(text):
-    mapping = {'ı':'i','ğ':'g','ö':'o',
-               'ü':'u','ş':'s','ç':'c'}
-
-    return ''.join( mapping[c] if c in 'ışğöçü' else c for c in text)
-
 def str_to_student(chosen_student,student_list):
     for student in student_list:
         if student == chosen_student:
@@ -72,8 +63,6 @@ def add_student(student_list):
                             fields=PROPERTIES, values=())
 
     if values:
-
-    #    new_student = Student(*map(txt_to_ascii, values))
         new_student = Student(*values)
         student_list.append(new_student)
 
@@ -82,7 +71,6 @@ def edit_student(chosen_student):
                                     title='Ogrenci bilgisi', fields=PROPERTIES,
                                     values=chosen_student.get_info().values())
     if updated_values:
-    #    chosen_student.edit(map(txt_to_ascii, updated_values))
         chosen_student.edit(updated_values)
 
 def sort_students(student_list):
@@ -103,7 +91,6 @@ try:
         reader = csv.reader(f,delimiter=';')
         reader.next() #This skips the header line
         student_l = [Student(*row_values[:-1]) for row_values in reader]
-        map(lambda x: print(x.get_info()),student_l)
 except IOError:
     student_l = []
 
@@ -116,14 +103,12 @@ eg.msgbox("Ogrenci kayit programina hosgeldiniz","Hosgeldiniz")
 while True:
     title = "Ogrenci Kaydi"
     msg = "Lutfen hakkinda islem yapmak istediginiz ogrenciyi seciniz."
-    print(student_l)
+
     student_list_modified = ['     -     '.join(student.get_info().values()) for student in student_l]
     chosen_student =  eg.choicebox(msg,title,student_list_modified)
 
-
     if chosen_student != BLANK_LIST_ERROR and chosen_student != None:
         chosen_student = student_l[student_list_modified.index(chosen_student)]
-    
 
     if chosen_student:
         action = eg.buttonbox("Ne yapmak istiyorsunuz?",
