@@ -91,6 +91,7 @@ try:
         reader = csv.reader(f,delimiter=';')
         reader.next() #This skips the header line
         student_l = [Student(*row_values[:-1]) for row_values in reader]
+
 except IOError:
     student_l = []
 
@@ -103,8 +104,15 @@ eg.msgbox("Ogrenci kayit programina hosgeldiniz","Hosgeldiniz")
 while True:
     title = "Ogrenci Kaydi"
     msg = "Lutfen hakkinda islem yapmak istediginiz ogrenciyi seciniz."
+    student_l.sort(key=lambda x: x.puan,reverse=True)
+    student_list_modified = []
+    for i,v in enumerate(student_l):
+        values = v.get_info().values()[:]
+        values.insert(0,str(i))
+        student_list_modified.append('     -     '.join(values))
 
-    student_list_modified = ['     -     '.join(student.get_info().values()) for student in student_l]
+    #student_list_modified = ['     -     '.join(student.get_info().values()) for student in student_l]
+
     chosen_student =  eg.choicebox(msg,title,student_list_modified)
 
     if chosen_student != BLANK_LIST_ERROR and chosen_student != None:
