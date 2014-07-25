@@ -1,11 +1,13 @@
 import easygui as eg
 import sys
 import csv
+import pprint
 from collections import OrderedDict
 
 BLANK_LIST_ERROR = 'Program logic error - no choices were specified.'
 PROPERTIES = ("Ad","Soyad","Universite","OSYM Puani",
               "Yili","CBUTF Taban Puani","Not Ortalamasi")
+ALIGN_WIDTH = 25
 
 class Student(object):
     def calc_puan(self):
@@ -86,11 +88,21 @@ def quit_prompt(student_list):
                 writer.writerow(student.export_for_csv())
         sys.exit(0)
 
+def align_output(values):
+    output = ''
+    for item in values:
+        pad = ALIGN_WIDTH - len(item)
+        txt = item + pad*' '
+        output += txt
+    return output
+
+
 try:
     with open('ogrenciler.csv','rb') as f:
         reader = csv.reader(f,delimiter=';')
         reader.next() #This skips the header line
-        student_l = [Student(*row_values[:-1]) for row_values in reader]
+        #Read all values but 'puan', it is not an argument of 'Student'
+        student_l = [Student(*row_values[:-1]) for row_values in reader] 
 
 except IOError:
     student_l = []
@@ -104,15 +116,22 @@ eg.msgbox("Ogrenci kayit programina hosgeldiniz","Hosgeldiniz")
 while True:
     title = "Ogrenci Kaydi"
     msg = "Lutfen hakkinda islem yapmak istediginiz ogrenciyi seciniz."
+
+    #Sort the 'Student' objects' list everytime the loop runs.
+
     student_l.sort(key=lambda x: x.puan,reverse=True)
     student_list_modified = []
+
+    #Add the index of the item at the beginning of its representing string.
+    #It maintains the sorted order.
+
     for i,v in enumerate(student_l):
         values = v.get_info().values()[:]
         values.insert(0,str(i))
-        student_list_modified.append('     -     '.join(values))
-
-    #student_list_modified = ['     -     '.join(student.get_info().values()) for student in student_l]
-
+        print values
+        #student_list_modified.append('     -     '.join(values))
+        student_list_modified.append(align_output(values))
+    
     chosen_student =  eg.choicebox(msg,title,student_list_modified)
 
     if chosen_student != BLANK_LIST_ERROR and chosen_student != None:
