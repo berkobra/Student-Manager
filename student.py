@@ -13,6 +13,8 @@
 #
 #     You should have received a copy of the GNU General Public License
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+#     I can be reached at: berkozkutuk@gmail.com
 
 import easygui as eg
 import sys
@@ -25,12 +27,16 @@ PROPERTIES = ("Ad", "Soyad", "Universite", "OSYM Puani",
               "Sinif", "Egitim", "Disiplin Cezasi", "Telefon", "Uygunluk")
 BLANK_LIST_ERROR = 'Program logic error - no choices were specified.'
 ALIGN_WIDTH = 25
-CSV_FILE = 'ogrenciler.csv'
-
 
 class Student(object):
+    """Class representing a student.
+       Holds all the information related to the student.
+    """
     def calc_puan(self):
-        if self.osym_puani != '' and self.cbutf_puani != '' and self.not_ortalamasi != '':
+        """Calculates the final score based on the other scores.
+           If any of the other scores is empty, returns an empty string.
+        """
+        if all((self.osym_puani, self.cbutf_puani, self.not_ortalamasi)):
             self.puan = '{:.3f}'.format(
             (float(self.osym_puani)/float(self.cbutf_puani))*100 + float(self.not_ortalamasi)
             )
@@ -58,10 +64,18 @@ class Student(object):
         return '{} {}'.format(self.name, self.surname)
 
     def __eq__(self, other):
+        """Allows comparing Student objects with strings.
+           Used for finding Student objects with fullnames.
+        """
         if isinstance(other, str):
             return repr(self) == other
 
     def get_info(self):
+        """Returns student info as an OrderedDict.
+           Order matters because the output values 
+           are passed into the student editing form 
+           as default values.
+        """
         return OrderedDict([('name', self.name),
                             ('surname', self.surname),
                             ('university', self.university),
@@ -77,6 +91,9 @@ class Student(object):
                             ('puan', self.puan)])
 
     def edit(self, values):
+        """Updates student info with given tuple.
+           Final score is calculated again with new values.
+        """
         (self.name, self.surname, self.university, self.osym_puani,
          self.year, self.cbutf_puani, self.not_ortalamasi, self.sinif,
          self.egitim, self.disiplin, self.telefon, self.uygunluk) = values
@@ -85,14 +102,9 @@ class Student(object):
     def export_for_csv(self):
         return self.get_info().values()
 
-
-def str_to_student(chosen_student, student_list):
-    for student in student_list:
-        if student == chosen_student:
-            return student
-
-
 def add_student(student_list):
+    """Adds student with given values to the Student objects' list.
+    """
     values = eg.multenterbox(msg='Ogrenci bilgilerini giriniz:',
                             title='Ogrenci bilgisi',
                             fields=PROPERTIES, values=())
@@ -103,6 +115,9 @@ def add_student(student_list):
 
 
 def edit_student(chosen_student):
+    """Edits the student with given values.
+       The student's current info is filled in the form.
+    """
     updated_values = eg.multenterbox(msg='Ogrenci bilgilerini giriniz:',
                                     title='Ogrenci bilgisi', fields=PROPERTIES,
                                     values=chosen_student.get_info().values())
@@ -111,6 +126,9 @@ def edit_student(chosen_student):
 
 
 def find_student(student_list):
+    """Searchs for the Student object with given fullname in student_list.
+       If found, opens up the Student's form, otherwise displays a message.
+    """
     fullname = eg.enterbox(msg='Aramak istediginiz ogrencinin tam adini giriniz', title='Ogrenci Ara')
     for student in student_list:
         if student == fullname:  # Student object's __eq__ returns fullname so this code is okay.
@@ -122,10 +140,10 @@ def find_student(student_list):
 
 def sort_students(student_list,attr='osym_puani',reverse=False):
     """
-    Returns a sorted copy of the student list sorted by the given 'attr'.
-    If given 'attr' is 'name', sorting is done as: 'name' 'surname'
+    Returns a sorted copy of the student_list sorted by the given attr.
+    If given attr is 'name', sorting is done as: 'name' 'surname'
     Else, sorting is done as: 'attr' 'name' 'surname'
-    'reverse' parameter is directly passed into sorted() functions.
+    reverse parameter is directly passed into sorted() functions.
     """
     if attr != 'name':
         return sorted(student_list,key=attrgetter(attr,'name','surname'),reverse=reverse)
@@ -134,6 +152,13 @@ def sort_students(student_list,attr='osym_puani',reverse=False):
 
 
 def sort_param_getter(choice):
+    """
+    Returns a tuple of sorting criteria and reverse parameter.
+    choice is what user sees in the actual program.
+    value returned from paramdict based on choice is the related
+    class attribute of Student object.
+    reverse parameter is True for scores, otherwise False.
+    """
     paramdict = {'Ad soyad':'name',
                  'Universite':'university',
                  'OSYM Puani':'osym_puani',
@@ -155,19 +180,38 @@ def sort_param_getter(choice):
 
 
 def quit_prompt(student_list):
+    """Asks if the user wants to quit or not.
+       If yes, saves the student_list as a CSV file.
+    """
     if eg.ynbox("Cikmak istediginize emin misiniz?", choices=('Evet', 'Hayir')):
-        with open(CSV_FILE, 'wb') as f:
-            writer = csv.writer(f, delimiter=';')
-            writer.writerow(['AD', 'SOYAD', 'UNIVERSITE', 'OSYM PUANI', 'YILI',
-                             'CBUTF TABAN PUANI', 'NOT ORTALAMASI', 'SINIF',
-                             'EGITIM', 'DISIPLIN CEZASI', 'TELEFON', 'UYGUNLUK', 'PUAN'])
-            student_list = sort_students(student_list)
-            for student in student_list:
-                writer.writerow(student.export_for_csv())
-        sys.exit(0)
+        csv_file = eg.filesavebox(title='Tabloyu kaydet',filetypes=['*.csv'])
+
+        #Adds .csv extension if user did not already.
+        if csv_file:
+            if csv_file[-4:] != '.csv':
+                csv_file += '.csv'
+
+            with open(csv_file, 'wb') as f:
+                writer = csv.writer(f, delimiter=';')
+                writer.writerow(['AD', 'SOYAD', 'UNIVERSITE', 'OSYM PUANI', 'YILI',
+                                 'CBUTF TABAN PUANI', 'NOT ORTALAMASI', 'SINIF',
+                                 'EGITIM', 'DISIPLIN CEZASI', 'TELEFON', 'UYGUNLUK', 'PUAN'])
+                student_list = sort_students(student_list)
+                for student in student_list:
+                    writer.writerow(student.export_for_csv())
+            sys.exit(0)
+        else:
+            choice = eg.buttonbox(msg='Kaydetmeden cikmak istediginize emin misiniz?',
+                                  title='Kaydetmeden cikis',choices=('Evet','Hayir'))
+            if choice:
+                sys.exit(0)
 
 
 def align_output(values):
+    """aligns the output of a Student object.
+       result will be displayed in the listbox.
+    """
+    #TODO improve this method
     output = ''
     for item in values:
         pad = ALIGN_WIDTH - len(item)

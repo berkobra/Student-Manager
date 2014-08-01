@@ -13,31 +13,39 @@
 #
 #     You should have received a copy of the GNU General Public License
 #     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+#     I can be reached at: berkozkutuk@gmail.com
 
 import student as std
 import easygui as eg
 import csv
 
-try:
-    with open(std.CSV_FILE, 'rb') as f:
+
+csv_file = eg.fileopenbox(title='Tabloyu ac',filetypes=['*.csv'])
+if csv_file:
+    with open(csv_file, 'rb') as f:
         reader = csv.reader(f, delimiter=';')
         reader.next()  # This skips the header line
         #Read all values but 'puan', it is not an argument of 'Student'
         student_l = [std.Student(*row_values[:-1]) for row_values in reader]
-except IOError:
+else:
     student_l = []
 
+#Intro message
+#Can display the 'About' section or move on to the program
 intro_choice = eg.buttonbox("Ogrenci kayit programina hosgeldiniz","Hosgeldiniz",choices=('Devam','Hakkinda'))
 if intro_choice == 'Hakkinda':
     eg.msgbox("""Copyright (C) 2014  Berk Ozkutuk
     Bu program GPL lisansina sahiptir.
     Daha fazla bilgi icin LICENSE.txt dosyasina bakiniz.""")
 
+#variables which are passed to the choicebox function.
 title = "Ogrenci Kaydi"
 msg = "Lutfen hakkinda islem yapmak istediginiz ogrenciyi seciniz.\n"
 msg_veriler = str(std.PROPERTIES + ('Puan',))
 msg += msg_veriler
 
+#Default sorting parameters
 sort_param = 'osym_puani'
 reverse_param = True
 
@@ -53,8 +61,10 @@ while True:
         values.insert(0,str(i))
         student_list_modified.append(std.align_output(values))
     
+    #modified list is displayed, values in original list are preserved.
     chosen_student =  eg.choicebox(msg,title,student_list_modified)
 
+    #Ensures that chosen_student is a string representation of a Student object.
     if chosen_student != std.BLANK_LIST_ERROR and chosen_student is not None:
         chosen_student = student_l[student_list_modified.index(chosen_student)]
 

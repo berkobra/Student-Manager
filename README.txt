@@ -6,38 +6,29 @@ Student Manager
   - Import / export the student data in CSV format.
   - Simple operations on students like add, edit, find and more.
 
-
+  
 Requirements
 ------------
-
-Student Manager uses [easygui] to work properly.
+Student Manager uses easygui to work properly.
 
 
 How To Use
 ----------
-You can simply launch the main.pyw directly. Alternatively, you can:
-```sh
-python main.pyw
-```
+You can simply launch the main.pyw directly. Alternatively,
+you can run the following command in the program directory:
+
+    python main.pyw
+
 
 Planned Features
 ----------------
  * Unicode support
  * Error handling
  * Better listing method
+
  
-----
-Version
--------
-
-1.0
-
 License
--------
-GPL
-
-
 ----
-#####*This is my first real project, so any help and suggestion is highly appreciated!*
+GPL
+LICENSE.txt for details.
 
-[easygui]:http://easygui.sourceforge.net/
