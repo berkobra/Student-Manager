@@ -93,8 +93,13 @@ def edit_student(chosen_student):
         chosen_student.edit(updated_values)
 
 def find_student(student_l):
-    #TO BE IMPLEMENTED
-    pass
+    fullname = eg.enterbox(msg='Aramak istediginiz ogrencinin tam adini giriniz', title='Ogrenci Ara')
+    for student in student_l:
+        if student == fullname: #Student object's __eq__ returns fullname so this code is okay.
+            edit_student(student)
+            break
+    else:
+        eg.msgbox(msg='Aradiginiz ogrenci bulunamadi!', title='Hata')
 
 def sort_students(student_list,attr='osym_puani',reverse=False):
     """
