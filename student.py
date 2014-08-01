@@ -1,14 +1,31 @@
+# A little GUI program to handle student data and import/export them as CSV.
+#     Copyright (C) 2014  Berk Ozkutuk
+#
+#     This program is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU General Public License as published by
+#     the Free Software Foundation, either version 3 of the License, or
+#     (at your option) any later version.
+#
+#     This program is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU General Public License for more details.
+#
+#     You should have received a copy of the GNU General Public License
+#     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import easygui as eg
 import sys
 import csv
 from collections import OrderedDict
 from operator import attrgetter
 
-BLANK_LIST_ERROR = 'Program logic error - no choices were specified.'
 PROPERTIES = ("Ad", "Soyad", "Universite", "OSYM Puani",
               "Yili", "CBUTF Taban Puani", "Not Ortalamasi",
               "Sinif", "Egitim", "Disiplin Cezasi", "Telefon", "Uygunluk")
+BLANK_LIST_ERROR = 'Program logic error - no choices were specified.'
 ALIGN_WIDTH = 25
+CSV_FILE = 'ogrenciler.csv'
 
 
 class Student(object):
@@ -35,7 +52,7 @@ class Student(object):
         self.disiplin = disiplin
         self.telefon = telefon
         self.uygunluk = uygunluk
-        self.calc_puan()  
+        self.calc_puan()
 
     def __repr__(self):
         return '{} {}'.format(self.name, self.surname)
@@ -43,9 +60,6 @@ class Student(object):
     def __eq__(self, other):
         if isinstance(other, str):
             return repr(self) == other
-
-    def remove(self):
-        student_l.remove(self)
 
     def get_info(self):
         return OrderedDict([('name', self.name),
@@ -71,19 +85,22 @@ class Student(object):
     def export_for_csv(self):
         return self.get_info().values()
 
+
 def str_to_student(chosen_student, student_list):
     for student in student_list:
         if student == chosen_student:
             return student
 
+
 def add_student(student_list):
     values = eg.multenterbox(msg='Ogrenci bilgilerini giriniz:',
-                            title='Ogrenci bilgisi', 
+                            title='Ogrenci bilgisi',
                             fields=PROPERTIES, values=())
 
     if values:
         new_student = Student(*values)
         student_list.append(new_student)
+
 
 def edit_student(chosen_student):
     updated_values = eg.multenterbox(msg='Ogrenci bilgilerini giriniz:',
@@ -92,14 +109,16 @@ def edit_student(chosen_student):
     if updated_values:
         chosen_student.edit(updated_values)
 
-def find_student(student_l):
+
+def find_student(student_list):
     fullname = eg.enterbox(msg='Aramak istediginiz ogrencinin tam adini giriniz', title='Ogrenci Ara')
-    for student in student_l:
-        if student == fullname: #Student object's __eq__ returns fullname so this code is okay.
+    for student in student_list:
+        if student == fullname:  # Student object's __eq__ returns fullname so this code is okay.
             edit_student(student)
             break
     else:
         eg.msgbox(msg='Aradiginiz ogrenci bulunamadi!', title='Hata')
+
 
 def sort_students(student_list,attr='osym_puani',reverse=False):
     """
@@ -113,8 +132,9 @@ def sort_students(student_list,attr='osym_puani',reverse=False):
     else:
         return sorted(student_list,key=attrgetter('name','surname'),reverse=reverse)
 
+
 def sort_param_getter(choice):
-    paramDict = {'Ad soyad':'name',
+    paramdict = {'Ad soyad':'name',
                  'Universite':'university',
                  'OSYM Puani':'osym_puani',
                  'Yili':'year',
@@ -131,11 +151,12 @@ def sort_param_getter(choice):
         reverse = True
     else:
         reverse = False
-    return (paramDict[choice],reverse)
+    return paramdict[choice],reverse
+
 
 def quit_prompt(student_list):
     if eg.ynbox("Cikmak istediginize emin misiniz?", choices=('Evet', 'Hayir')):
-        with open('ogrenciler.csv', 'wb') as f:
+        with open(CSV_FILE, 'wb') as f:
             writer = csv.writer(f, delimiter=';')
             writer.writerow(['AD', 'SOYAD', 'UNIVERSITE', 'OSYM PUANI', 'YILI',
                              'CBUTF TABAN PUANI', 'NOT ORTALAMASI', 'SINIF',
@@ -145,6 +166,7 @@ def quit_prompt(student_list):
                 writer.writerow(student.export_for_csv())
         sys.exit(0)
 
+
 def align_output(values):
     output = ''
     for item in values:
@@ -152,73 +174,3 @@ def align_output(values):
         txt = item + pad*' '
         output += txt
     return output
-
-try:
-    with open('ogrenciler.csv', 'rb') as f:
-        reader = csv.reader(f, delimiter=';')
-        reader.next() #This skips the header line
-        #Read all values but 'puan', it is not an argument of 'Student'
-        student_l = [Student(*row_values[:-1]) for row_values in reader]
-except IOError:
-    student_l = []
-
-eg.msgbox("Ogrenci kayit programina hosgeldiniz","Hosgeldiniz")
-
-###########################
-#        MAIN LOOP        #
-###########################
-title = "Ogrenci Kaydi"
-msg = "Lutfen hakkinda islem yapmak istediginiz ogrenciyi seciniz.\n"
-msg_veriler = str(PROPERTIES + ('Puan',))
-msg += msg_veriler
-
-sort_param = 'osym_puani'
-reverse_param = True
-
-while True:
-        #Sort the 'Student' objects' list everytime the loop runs.
-
-    #student_l.sort(key=lambda x: x.puan,reverse=True)
-
-    student_l = sort_students(student_l,sort_param, reverse=reverse_param)
-    student_list_modified = []
-
-    #Add the index of the item at the beginning of its representing string.
-    #It maintains the sorted order.
-
-    for i,v in enumerate(student_l, 1):
-        values = v.get_info().values()[:]
-        values.insert(0,str(i))
-        #student_list_modified.append('     -     '.join(values))
-        student_list_modified.append(align_output(values))
-    
-    chosen_student =  eg.choicebox(msg,title,student_list_modified)
-
-    if chosen_student != BLANK_LIST_ERROR and chosen_student is not None:
-        chosen_student = student_l[student_list_modified.index(chosen_student)]
-
-    if chosen_student:
-        action = eg.buttonbox("Ne yapmak istiyorsunuz?",
-                              choices=('Kaldir','Degistir','Ekle','Ara','Sirala','Iptal'))
-        if action == 'Kaldir':
-            chosen_student.remove()
-        elif action == 'Degistir':
-            edit_student(chosen_student)
-        elif action == 'Ekle':
-            add_student(student_l)
-        elif action == 'Ara':
-            find_student(student_l)
-        elif action == 'Sirala':
-            sort_choice = eg.buttonbox("Siralama parametresini seciniz.",
-                              choices=('Ad soyad',)+PROPERTIES[2:]+('Puan',))
-            sort_param, reverse_param = sort_param_getter(sort_choice)
-
-
-    else:
-        quit_prompt(student_l)
-
-    
-
-
-
-    
