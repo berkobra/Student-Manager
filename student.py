@@ -21,14 +21,21 @@
 import eg
 import sys
 import csv
+import glob
 from collections import OrderedDict
 from operator import attrgetter
+
 
 PROPERTIES = ("Ad", "Soyad", "Universite", "OSYM Puani",
               "Yili", "CBUTF Taban Puani", "Not Ortalamasi",
               "Sinif", "Egitim", "Disiplin Cezasi", "Telefon", "Uygunluk")
 BLANK_LIST_ERROR = 'Program logic error - no choices were specified.'
 ALIGN_WIDTH = 25
+
+def str_to_uni(obj):
+    if isinstance(obj, str):
+        return unicode(obj, 'latin-1')
+    return obj
 
 uni = str_to_uni
 
@@ -52,30 +59,26 @@ class Student(object):
                  sinif, egitim, disiplin, telefon, uygunluk):
         self.name = uni(name)
         self.surname = uni(surname)
-        #self.university = uni(university)
-        #self.name = name
-        #self.surname = surname
-        self.university = university
+        self.university = uni(university)
         self.year = year
         self.osym_puani = osym_puani
         self.cbutf_puani = cbutf_puani
         self.not_ortalamasi = not_ortalamasi
         self.sinif = sinif
-        self.egitim = egitim
-        self.disiplin = disiplin
+        self.egitim = uni(egitim)
+        self.disiplin =uni(disiplin)
         self.telefon = telefon
-        self.uygunluk = uygunluk
+        self.uygunluk = uni(uygunluk)
         self.calc_puan()
 
     def __repr__(self):
-        #return '{} {}'.format(self.name.encode('latin1'), self.surname.encode('latin1'))
-        return '{} {}'.format(str(self.name,encoding='latin-1'), str(self.surname,encoding='latin-1'))
+        return '{} {}'.format(self.name.encode('latin-1'), self.surname.encode('latin-1'))
 
     def __eq__(self, other):
         """Allows comparing Student objects with strings.
            Used for finding Student objects with fullnames.
         """
-        if isinstance(other, str):
+        if isinstance(other, basestring):
             return repr(self) == other
 
     def get_info(self):
@@ -154,9 +157,9 @@ def sort_students(student_list,attr='osym_puani',reverse=False):
     reverse parameter is directly passed into sorted() functions.
     """
     if attr != 'name':
-        return sorted(student_list,key=attrgetter(attr,'name','surname'),reverse=reverse)
+        return sorted(student_list, key=attrgetter(attr,'name','surname'),reverse=reverse)
     else:
-        return sorted(student_list,key=attrgetter('name','surname'),reverse=reverse)
+        return sorted(student_list, key=attrgetter('name','surname'),reverse=reverse)
 
 
 def sort_param_getter(choice):
@@ -187,13 +190,13 @@ def sort_param_getter(choice):
     return paramdict[choice],reverse
 
 
-def quit_prompt(student_list):
+def quit_prompt(student_list, default=None):
     """Asks if the user wants to quit or not.
        If yes, saves the student_list as a CSV file.
     """
     if eg.ynbox("Cikmak istediginize emin misiniz?", choices=('Evet', 'Hayir')):
-        csv_file = eg.filesavebox(title='Tabloyu kaydet',filetypes=['*.csv'])
 
+        csv_file = eg.filesavebox(title='Tabloyu kaydet',filetypes=['*.csv'],default='tablo')
         #Adds .csv extension if user did not already.
         if csv_file:
             if csv_file[-4:] != '.csv':

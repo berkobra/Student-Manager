@@ -1,6 +1,8 @@
 Student Manager
 ===============
 
+Now with Unicode!
+
 "Student Manager" is a student management tool for educators.
 
   - Import / export the student data in CSV format.
@@ -22,7 +24,6 @@ python main.pyw
 
 Planned Features
 ----------------
- * Unicode support
  * Error handling
  * Better listing method
  
