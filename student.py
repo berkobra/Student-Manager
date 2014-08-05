@@ -1,3 +1,5 @@
+#!/usr/bin/python
+# -*- coding: latin1 -*-
 # A little GUI program to handle student data and import/export them as CSV.
 #     Copyright (C) 2014  Berk Ozkutuk
 #
@@ -16,7 +18,7 @@
 #
 #     I can be reached at: berkozkutuk@gmail.com
 
-import easygui as eg
+import eg
 import sys
 import csv
 from collections import OrderedDict
@@ -27,6 +29,8 @@ PROPERTIES = ("Ad", "Soyad", "Universite", "OSYM Puani",
               "Sinif", "Egitim", "Disiplin Cezasi", "Telefon", "Uygunluk")
 BLANK_LIST_ERROR = 'Program logic error - no choices were specified.'
 ALIGN_WIDTH = 25
+
+uni = str_to_uni
 
 class Student(object):
     """Class representing a student.
@@ -46,8 +50,11 @@ class Student(object):
     def __init__(self, name, surname, university,
                  osym_puani, year, cbutf_puani, not_ortalamasi,
                  sinif, egitim, disiplin, telefon, uygunluk):
-        self.name = name
-        self.surname = surname
+        self.name = uni(name)
+        self.surname = uni(surname)
+        #self.university = uni(university)
+        #self.name = name
+        #self.surname = surname
         self.university = university
         self.year = year
         self.osym_puani = osym_puani
@@ -61,7 +68,8 @@ class Student(object):
         self.calc_puan()
 
     def __repr__(self):
-        return '{} {}'.format(self.name, self.surname)
+        #return '{} {}'.format(self.name.encode('latin1'), self.surname.encode('latin1'))
+        return '{} {}'.format(str(self.name,encoding='latin-1'), str(self.surname,encoding='latin-1'))
 
     def __eq__(self, other):
         """Allows comparing Student objects with strings.
@@ -100,7 +108,7 @@ class Student(object):
         self.calc_puan()
 
     def export_for_csv(self):
-        return self.get_info().values()
+        return [x.encode('latin-1') for x in self.get_info().values()]
 
 def add_student(student_list):
     """Adds student with given values to the Student objects' list.

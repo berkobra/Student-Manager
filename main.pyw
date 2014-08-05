@@ -1,3 +1,5 @@
+#!/usr/bin/python
+# -*- coding: latin1 -*-
 # A little GUI program to handle student data and import/export them as CSV.
 #     Copyright (C) 2014  Berk Ozkutuk
 #
@@ -16,8 +18,10 @@
 #
 #     I can be reached at: berkozkutuk@gmail.com
 
+
+
 import student as std
-import easygui as eg
+import eg
 import csv
 
 
