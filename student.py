@@ -48,9 +48,10 @@ class Student(object):
            If any of the other scores is empty, returns an empty string.
         """
         if all((self.osym_puani, self.cbutf_puani, self.not_ortalamasi)):
-            self.puan = '{:.3f}'.format(
-            (float(self.osym_puani)/float(self.cbutf_puani))*100 + float(self.not_ortalamasi)
-            )
+            a = float(self.osym_puani)/float(self.cbutf_puani) * 100
+            b = float(self.not_ortalamasi)
+            result = (a * 75.0 / 100.0) + (b * 25.0 / 100.0)
+            self.puan = '{:.3f}'.format(result)
         else:
             self.puan = ''
 
